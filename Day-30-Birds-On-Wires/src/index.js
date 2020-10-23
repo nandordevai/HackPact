@@ -1,82 +1,68 @@
 import p5 from 'p5/lib/p5.min';
-import Tone from 'tone';
+import * as Tone from 'tone';
 import StartAudioContext from 'startaudiocontext';
 
 const sketch = (p) => {
-  let center = {};
     let wcolors = [];
-    for (let i=0; i< 8; i++) {
-      wcolors.push(0);
+    let center = {};
+    for (let i = 0; i < 8; i++) {
+        wcolors.push(0);
     }
-    let flySynths = [];
 
-    var chorus = new Tone.Chorus(0.8, 2.5, 0.2).toMaster();  
+    var chorus = new Tone.Chorus(0.8, 2.5, 0.2).toMaster();
 
     var freeverb = new Tone.Freeverb().toMaster();
-    freeverb.dampening.value = 2600;
+    freeverb.dampening = 2600;
     freeverb.roomSize.value = 0.3;
-    var pingpong = new Tone.PingPongDelay("4n", 0.1).connect(freeverb);
-
+    var pingpong = new Tone.PingPongDelay('4n', 0.1).connect(freeverb);
 
     var autoFilter = new Tone.AutoFilter({
-      "frequency" : "8m",
-      "min" : 100,
-      "max" : 15000,
-      "filter"  : {
-"type"  : "highpass" ,
-"rolloff"  : -12 ,
-"Q"  : 1
-}
+        'frequency': '8m',
+        'min': 100,
+        'max': 15000,
+        'filter': {
+            'type': 'highpass',
+            'rolloff': -12,
+            'Q': 1
+        }
     }).connect(chorus);
 
-    autoFilter.start()    
+    autoFilter.start()
 
     let v1 = new Tone.Volume(-100).connect(autoFilter);
-    let f1 = new Tone.Filter(300, "highpass");
-    let mosc1 = new Tone.Oscillator(Tone.Midi(53).toFrequency(), "sine").chain(f1, v1).start();
-
     let v2 = new Tone.Volume(-100).connect(autoFilter);
-    let f2 = new Tone.Filter(400, "highpass");
-    let mosc2 = new Tone.Oscillator(Tone.Midi(60).toFrequency(), "sine").chain(f2, v2).start();
-
     let v3 = new Tone.Volume(-100).connect(autoFilter);
-    let f3 = new Tone.Filter(500, "highpass");
-    let mosc3 = new Tone.Oscillator(Tone.Midi(65).toFrequency(), "sine").chain(f3, v3).start();
-
     let v4 = new Tone.Volume(-100).connect(autoFilter);
-    let f4 = new Tone.Filter(600, "highpass");
-    let mosc4 = new Tone.Oscillator(Tone.Midi(79).toFrequency(), "sine").chain(f4, v4).start();
-
     let wiresynths = [];
-    let wireMelody = [53, 56, 60, 65, 68, 69, 74 , 77];
-    for(let i=0; i< 8; i++) {
-      wiresynths.push (new Tone.FMSynth({
-                    "harmonicity": 28,
-                    "modulationIndex": 2,
-                    "detune": 0,
-                    "oscillator": {
-                        "type": "sawtooth"
-                    },
-                    "envelope": {
-                        "attack": 0.01,
-                        "decay": 0.1,
-                        "sustain": 0.18,
-                        "release": 8
-                    },
-                    "modulation": {
-                        "type": "square"
-                    },
-                    "modulationEnvelope": {
-                        "attack": 0.01,
-                        "decay": 0.02,
-                        "sustain": 0.3,
-                        "release": 1
-                    },
-                    "volume":-16
-                    
-                }).chain(chorus, pingpong));
-      }
-                
+    let wireMelody = [53, 56, 60, 65, 68, 69, 74, 77];
+    for (let i = 0; i < 8; i++) {
+        wiresynths.push(new Tone.FMSynth({
+            harmonicity: 28,
+            modulationIndex: 2,
+            detune: 0,
+            oscillator: {
+                type: 'sawtooth'
+            },
+            envelope: {
+                attack: 0.01,
+                decay: 0.1,
+                sustain: 0.18,
+                release: 8
+            },
+            modulation: {
+                type: 'square'
+            },
+            modulationEnvelope: {
+                attack: 0.01,
+                decay: 0.02,
+                sustain: 0.3,
+                release: 1
+            },
+            volume: -16
+
+        }).chain(chorus, pingpong));
+    }
+
     var FLOCK_SIZE = 200,
         NUM_POWER_LINES = 8,
         POWER_LINES_Z = 20.0,
@@ -107,12 +93,8 @@ const sketch = (p) => {
         PYRAMID_HALFWIDTH_AT_TOP = PYRAMID_TOP,
         WALL_SLOPE = (PYRAMID_HALFWIDTH_AT_TOP - PYRAMID_HALFWIDTH_AT_BASE) / (PYRAMID_TOP - PYRAMID_BASE),
         WIDTH_AT_BASE = PYRAMID_HALFWIDTH_AT_BASE - PYRAMID_BASE * WALL_SLOPE;
-    var timer, flock = [],
+    var flock = [],
         lines = [];
-
-    function el(id) {
-        return document.getElementById(id);
-    }
 
     function each(a, f) {
         for (var i = 0, l = a.length; i < l; i++) f(a[i], i);
@@ -213,8 +195,7 @@ const sketch = (p) => {
                     y: 0,
                     z: 0
                 },
-                influence = 0.0,
-                distance = 0.0;
+                influence = 0.0;
             for (i = 0; b = flock[i]; i++) {
                 if (b === boid) continue;
                 if (b.powerLine == boid.powerLine) {
@@ -257,14 +238,12 @@ const sketch = (p) => {
             }
         }
 
-        
-
         function stepFlying() {
             var centerOfFlock = {
-                    x: 0,
-                    y: 0,
-                    z: 0
-                },
+                x: 0,
+                y: 0,
+                z: 0
+            },
                 averageVelocity = {
                     x: 0,
                     y: 0,
@@ -342,7 +321,6 @@ const sketch = (p) => {
             // do not let velocity exceed a maximum
             if (vBar > MAXIMUM_VELOCITY) pmulby(boid.v, MAXIMUM_VELOCITY / vBar);
             paddto(boid.p, boid.v);
-
             center = centerOfFlock;
         }
 
@@ -356,8 +334,8 @@ const sketch = (p) => {
                 };
             }
             lastStep = 0;
-            
-            wiresynths[boid.powerLine].triggerAttackRelease(Tone.Midi((wireMelody[boid.powerLine])).toFrequency(),"128n");
+
+            wiresynths[boid.powerLine].triggerAttackRelease(Tone.Midi((wireMelody[boid.powerLine])).toFrequency(), '128n');
             wcolors[boid.powerLine] = 255;
             boid.powerLine = -1;
             boid.v.x = LAUNCH_VELOCITY * direction.x;
@@ -366,7 +344,7 @@ const sketch = (p) => {
 
             return 0;
         }
-        boid.step = function() {
+        boid.step = function () {
             var pl = boid.powerLine;
             if (boid.powerLine >= 0) stepSitting();
             else stepFlying();
@@ -380,7 +358,7 @@ const sketch = (p) => {
             y: y,
             z: z
         };
-        line.directionalVelocity = function(p, v) {
+        line.directionalVelocity = function (p, v) {
             var distance = metric(yz(p), line);
             return distance > 0.0 ? ((line.y - p.y) * v.y + (line.z - p.z) * v.z) / distance : -magnitude(yz(v));
         }
@@ -410,84 +388,78 @@ const sketch = (p) => {
         }
         // create power lines
         for (var i = 0; i < NUM_POWER_LINES; i++) lines.push(PowerLine(POWER_LINES_Y + i * POWER_LINES_SPACING, POWER_LINES_Z));
-        var timer = setInterval(step, 50);
+        setInterval(step, 50);
     }
 
     function step() {
-        each(flock, function(b) {
+        each(flock, function (b) {
             b.step();
-        })
+        });
     }
 
     function fog(z) {
         var c = Math.max(50, parseInt(0 + 300 * (z / PYRAMID_TOP)));
         p.noStroke();
-        p.fill(255,255-c);
-        
+        p.fill(255, 255 - c);
     }
+
     p.setup = () => {
-        let canvas = p.createCanvas(800, 800, p.WEBGL);
+        p.createCanvas(800, 800, p.WEBGL);
         p.smooth();
         init();
     }
-    p.draw = () => {
-        p.camera(-100 + p.sin(p.frameCount/50) * 50, 100 + + p.cos(p.frameCount/50) * 50, 600, 0, 0, 0, 0, 1, 0);
-        p.background(0)
 
-        //p.rotateY(p.frameCount/100);
-        
-        p.translate(-p.width/3,-p.height/2.5);
-        //p.rotateY(p.mouseX);
-        flock.sort(function(a, b) {
+    p.draw = () => {
+        p.camera(-100 + p.sin(p.frameCount / 50) * 50, 100 + + p.cos(p.frameCount / 50) * 50, 600, 0, 0, 0, 0, 1, 0);
+        p.background(0)
+        p.translate(-p.width / 3, -p.height / 2.5);
+        flock.sort(function (a, b) {
             return b.p.z - a.p.z;
         });
 
-        
-        for(let i=0; i<lines.length;i++) {
+        for (let i = 0; i < lines.length; i++) {
             var v = parseInt(225 * lines[i].y / lines[i].z + 225);
-            p.stroke(255,100);
+            p.stroke(255, 100);
             p.line(-1000, v, p.width, v);
-            p.fill(255,0,0,wcolors[i]);
+            p.fill(255, 0, 0, wcolors[i]);
             p.push();
             p.noStroke();
-            p.translate(0,v,0);
-            p.box(2000,2,2);
+            p.translate(0, v, 0);
+            p.box(2000, 2, 2);
             p.pop();
         }
 
-        each(flock, function(b) {
-
+        each(flock, function (b) {
             fog(b.p.z);
             circle(225 * b.p.x / b.p.z + 300, 225 * b.p.y / b.p.z + 225, 62.5 / b.p.z);
         })
 
-        if(flock[0].p.z > 0) v1.volume.rampTo( p.map(flock[0].p.z,80,0,-60,-30), 0.01);
-        if(flock[1].p.z > 0) v2.volume.rampTo( p.map(flock[1].p.z,80,0,-60,-30), 0.01);
-        if(flock[2].p.z > 0) v3.volume.rampTo( p.map(flock[2].p.z,80,0,-60,-30), 0.01);
-        if(flock[3].p.z > 0) v4.volume.rampTo( p.map(flock[3].p.z,80,0,-60,-30), 0.01);
+        if (flock[0].p.z > 0) v1.volume.rampTo(p.map(flock[0].p.z, 80, 0, -60, -30), 0.01);
+        if (flock[1].p.z > 0) v2.volume.rampTo(p.map(flock[1].p.z, 80, 0, -60, -30), 0.01);
+        if (flock[2].p.z > 0) v3.volume.rampTo(p.map(flock[2].p.z, 80, 0, -60, -30), 0.01);
+        if (flock[3].p.z > 0) v4.volume.rampTo(p.map(flock[3].p.z, 80, 0, -60, -30), 0.01);
 
-        for(let i=0; i< wcolors.length; i++) {
-
-          wcolors[i] -=20;
+        for (let i = 0; i < wcolors.length; i++) {
+            wcolors[i] -= 20;
         }
     }
 
     p.keyPressed = () => {
-        if(p.key == 'm') {
-            p.save(Date.now() + ".jpg");
+        if (p.key == 'm') {
+            p.save(Date.now() + '.jpg');
         }
     }
 
     p.mousePressed = () => {
-        StartAudioContext(Tone.context).then(function(){});    
+        StartAudioContext(Tone.context).then(function () { });
     }
 
     function circle(x, y, r) {
         p.push();
         p.translate(x, y, r);
-        p.sphere(1 + r/2);
+        p.sphere(1 + r / 2);
         p.pop();
     }
 }
-export default sketch;
+
 new p5(sketch);
